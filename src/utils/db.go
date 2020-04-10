@@ -7,7 +7,7 @@ import (
 )
 
 func DbConn() (db *sql.DB) {
-	var dbName string = "bar_tracking"
+	var dbName string = "friend_managerment"
 	var dbDriver string = "mysql"
 	var dbUser string = "root"
 	var dbPass string = "123456"
@@ -23,4 +23,11 @@ func DbConn() (db *sql.DB) {
 	}
 
 	return db
+}
+
+func TruncateTable(table string) (bool, error) {
+	db := DbConn();
+	_, err := db.Query("TRUNCATE TABLE " + table)
+
+	return true, err
 }
