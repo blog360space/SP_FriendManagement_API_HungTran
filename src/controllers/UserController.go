@@ -50,10 +50,42 @@ func UserCreateFriend(w http.ResponseWriter, r *http.Request) {
 	utils.Respond(w, resp)
 }
 
-// UserGetFriend Get Friend
-func UserGetFriend(w http.ResponseWriter, r *http.Request) {
-	resp := utils.Message(true, "User_GetFriend")
-	resp["friends"] = nil
+// UserGetFriendsRequest struct when request UserGetFriends
+type UserGetFriendsRequest struct {
+	Email string `json:"email"`
+}
+
+// UserGetFriends Get Friend
+// Example request {"email": "andy@example.com"}
+func UserGetFriends(w http.ResponseWriter, r *http.Request) {
+	defer utils.DbClose()
+
+	requestStruct := &UserGetFriendsRequest{}
+	err := json.NewDecoder(r.Body).Decode(requestStruct)
+	if err != nil {
+		resp := utils.Message(false, "Error while decoding request body.")
+		utils.Respond(w, resp)
+		return
+	}
+
+	email := requestStruct.Email
+	users, err := repo.UserGetFriendsByEmail(email)
+	if err != nil {
+		resp := utils.Message(false, err.Error())
+		utils.Respond(w, resp)
+		return
+	}
+
+	var emails []string
+	i := 0
+	count := len(users)
+	for i = 0; i < count; i++ {
+		emails = append(emails, users[i].Email)
+	}
+
+	resp := utils.Message(true, "")
+	resp["friends"] = emails
+	resp["count"] = count
 	utils.Respond(w, resp)
 }
 
