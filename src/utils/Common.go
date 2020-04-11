@@ -9,9 +9,8 @@ import (
 func Message(status bool, message string) map[string]interface{} {
 	if status == true {
 		return map[string]interface{}{"success": status}
-	} else {
-		return map[string]interface{}{"success": status, "message": message}
 	}
+	return map[string]interface{}{"success": status, "message": message}
 }
 
 // Respond json to browser

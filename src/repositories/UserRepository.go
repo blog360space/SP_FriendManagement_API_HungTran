@@ -64,3 +64,26 @@ func UserCreate(email string) (models.User, error) {
 
 	return user, nil
 }
+
+// UserGetFriendsByEmail Get Friends by email.
+func UserGetFriendsByEmail(email string) ([]models.User, error) {
+	db := u.DbConn()
+
+	var users = []models.User{}
+	user, _ := UserGetByEmail(email)
+	if user.ID == 0 {
+		return users, fmt.Errorf("User %s not exits", email)
+	}
+
+	sql := `SELECT *
+	FROM users
+	WHERE id IN (
+		SELECT r.user2_id
+		FROM relationships r
+		WHERE r.user1_id = ?
+	)`
+
+	db.Raw(sql, user.ID).Scan(&users)
+
+	return users, nil
+}

@@ -9,7 +9,7 @@ import (
 
 // UserCreateFriendRequest Request struct Create Friend between 2 existing emails
 type UserCreateFriendRequest struct {
-	Friends [2]string `json:"friends"`
+	Friends []string `json:"friends"`
 }
 
 // UserCreateFriend Create Friend between 2 existing emails

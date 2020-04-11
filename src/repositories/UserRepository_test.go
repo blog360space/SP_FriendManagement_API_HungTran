@@ -102,3 +102,35 @@ func TestUserCreateFriendSucess(t *testing.T) {
 		t.Errorf("Update exits relationship error")
 	}
 }
+
+func TestUserGetFriendsByEmail(t *testing.T) {
+	u.DbTruncateTable("users")
+	u.DbTruncateTable("relationships")
+
+	email1 := "andy@example.com"
+	email2 := "john@example.com"
+	email3 := "hungtran@example.com"
+
+	_, err1 := UserGetFriendsByEmail(email3)
+	expectedMsg := fmt.Sprintf("User %s not exits", email3)
+	if err1.Error() != expectedMsg {
+		t.Errorf("error = %s; want %s", err1.Error(), expectedMsg)
+	}
+
+	UserCreate(email1)
+	UserCreate(email2)
+	UserCreate(email3)
+
+	UserCreateFriend(email1, email2)
+	UserCreateFriend(email1, email3)
+
+	users, err := UserGetFriendsByEmail(email1)
+
+	if err != nil {
+		t.Errorf("error = %s; want null", err.Error())
+	}
+
+	if len(users) != 2 {
+		t.Errorf("len(user) = %d incorrect; want %d", len(users), 2)
+	}
+}
