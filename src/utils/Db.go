@@ -45,5 +45,6 @@ func DbTruncateTable(table string) bool {
 
 // DbClose Close Db Connection
 func DbClose() {
-	dbConn.Close()
+	db := DbConn()
+	db.Close()
 }
