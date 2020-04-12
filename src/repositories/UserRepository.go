@@ -119,3 +119,36 @@ func UserGetFriendsCommon(email1, email2 string) ([]models.User, error) {
 
 	return users, nil
 }
+
+// UserSubscribe subscribe to updates from an email address.
+func UserSubscribe(requestor, target string) (models.Relationship, error) {
+	db := u.DbConn()
+
+	relationship := models.Relationship{}
+	// Check if email1 - email2 are friends ?
+	user1, _ := UserGetByEmail(requestor)
+	if user1.ID == 0 {
+		return relationship, fmt.Errorf("Requestor %s not exits", requestor)
+	}
+
+	user2, _ := UserGetByEmail(target)
+	if user2.ID == 0 {
+		return relationship, fmt.Errorf("Target %s not exits", target)
+	}
+
+	db.Where("user1_id = ? AND user2_id = ?", user1.ID, user2.ID).First(&relationship)
+
+	if relationship.ID > 0 {
+		relationship.FriendStatus = configs.FRIEND_STATUS_YES
+		db.Save(&relationship)
+		return relationship, nil
+	}
+
+	relationship.User1ID = user1.ID
+	relationship.User2ID = user2.ID
+	relationship.FriendStatus = configs.FRIEND_STATUS_NO
+	relationship.Subscribe = configs.SUBSRIBE_YES
+	db.Create(&relationship)
+
+	return relationship, nil
+}

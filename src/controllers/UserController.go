@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"models"
 	"net/http"
 	repo "repositories"
 	"utils"
@@ -145,10 +146,43 @@ func UserGetFriendsCommon(w http.ResponseWriter, r *http.Request) {
 	utils.Respond(w, resp)
 }
 
+// UserSubscribeRequest use at UserSubscribe
+type UserSubscribeRequest struct {
+	Requestor string `json:"requestor"`
+	Target    string `json:"target"`
+}
+
 // UserSubscribe Subsribe by email
+// Example: {"requestor": "lisa@example.com","target": "john@example.com"}
 func UserSubscribe(w http.ResponseWriter, r *http.Request) {
-	resp := utils.Message(true, "User_Subscribe")
-	resp["friends"] = nil
+	// Close DB
+	defer utils.DbClose()
+	var err error
+	var relationship models.Relationship
+
+	// Decode request into struct UserSubscribeRequest
+	requestStruct := &UserSubscribeRequest{}
+	err = json.NewDecoder(r.Body).Decode(requestStruct)
+	if err != nil {
+		resp := utils.Message(false, "Error while decoding request body.")
+		utils.Respond(w, resp)
+		return
+	}
+
+	relationship, err = repo.UserSubscribe(requestStruct.Requestor, requestStruct.Target)
+	if err != nil {
+		resp := utils.Message(false, err.Error())
+		utils.Respond(w, resp)
+		return
+	}
+
+	if relationship.ID == 0 {
+		resp := utils.Message(false, err.Error())
+		utils.Respond(w, resp)
+		return
+	}
+
+	resp := utils.Message(true, "")
 	utils.Respond(w, resp)
 }
 

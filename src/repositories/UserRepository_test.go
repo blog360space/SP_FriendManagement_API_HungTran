@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"configs"
 	"fmt"
 	"models"
 	"testing"
@@ -172,5 +173,37 @@ func TestUserGetFriendsCommon(t *testing.T) {
 
 	if users[0].Email != email3 {
 		t.Errorf("user.Email = %s incorrect; want %s", users[0].Email, email3)
+	}
+}
+
+func TestUserSubscribe(t *testing.T) {
+	u.DbTruncateTable("users")
+	u.DbTruncateTable("relationships")
+
+	var relationship models.Relationship
+
+	email1 := "andy@example.com"
+	email2 := "john@example.com"
+
+	u1, _ := UserCreate(email1)
+	u2, _ := UserCreate(email2)
+	relationship, _ = UserSubscribe(email1, email2)
+
+	if relationship.ID == 0 {
+		t.Errorf("relationship.ID = %d incorrect; want > 0", relationship.ID)
+	}
+
+	if relationship.Subscribe != configs.SUBSRIBE_YES {
+		t.Errorf("relationship.ISubscribeD = %d incorrect; want %d", relationship.ID, configs.SUBSRIBE_YES)
+	}
+
+	if relationship.User1ID != u1.ID {
+		t.Errorf("relationship.User1ID != u1.ID (%d != %d) ; want equal", relationship.User1ID, u1.ID)
+
+	}
+
+	if relationship.User2ID != u2.ID {
+		t.Errorf("relationship.User1ID != u1.ID (%d != %d) ; want equal", relationship.User2ID, u2.ID)
+
 	}
 }
