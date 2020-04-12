@@ -13,7 +13,7 @@ func main() {
 
 	http.HandleFunc("/api/user/get_friend", c.UserGetFriends)
 
-	http.HandleFunc("/api/user/get_friend_common", c.UserGetFriendCommon)
+	http.HandleFunc("/api/user/get_friend_common", c.UserGetFriendsCommon)
 
 	http.HandleFunc("/api/user/subscribe", c.UserSubscribe)
 

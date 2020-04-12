@@ -87,3 +87,35 @@ func UserGetFriendsByEmail(email string) ([]models.User, error) {
 
 	return users, nil
 }
+
+// UserGetFriendsCommon Get user friends common
+func UserGetFriendsCommon(email1, email2 string) ([]models.User, error) {
+	db := u.DbConn()
+	var users = []models.User{}
+
+	user1, _ := UserGetByEmail(email1)
+	if user1.ID == 0 {
+		return users, fmt.Errorf("User %s not exits", email1)
+	}
+
+	user2, _ := UserGetByEmail(email2)
+	if user2.ID == 0 {
+		return users, fmt.Errorf("User %s not exits", email2)
+	}
+
+	sql := `SELECT *
+	FROM users
+	WHERE id IN (
+		SELECT r.user1_id
+		FROM relationships r
+		WHERE r.user2_id IN (?, ?)
+	)`
+
+	db.Raw(sql, user1.ID, user2.ID).Scan(&users)
+
+	if len(users) == 0 {
+		return users, fmt.Errorf("No common friend for %s and %s", email1, email2)
+	}
+
+	return users, nil
+}

@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"fmt"
+	"models"
 	"testing"
 	u "utils"
 )
@@ -132,5 +133,44 @@ func TestUserGetFriendsByEmail(t *testing.T) {
 
 	if len(users) != 2 {
 		t.Errorf("len(user) = %d incorrect; want %d", len(users), 2)
+	}
+}
+
+func TestUserGetFriendsCommon(t *testing.T) {
+	u.DbTruncateTable("users")
+	u.DbTruncateTable("relationships")
+	var err error
+	var users []models.User
+
+	email1 := "andy@example.com"
+	email2 := "john@example.com"
+	email3 := "hungtran@example.com"
+
+	UserCreate(email1)
+	UserCreate(email2)
+	UserCreate(email3)
+
+	users, err = UserGetFriendsCommon(email1, email2)
+	expectedMsg := fmt.Sprintf("No common friend for %s and %s", email1, email2)
+	// User has no common friend.
+	if expectedMsg != err.Error() {
+		t.Errorf("error = %s; want '%s'", err.Error(), expectedMsg)
+	}
+
+	UserCreateFriend(email3, email1)
+	UserCreateFriend(email3, email2)
+
+	users, err = UserGetFriendsCommon(email1, email2)
+
+	if err != nil {
+		t.Errorf("error = %s; want null", err.Error())
+	}
+
+	if len(users) != 1 {
+		t.Errorf("len(user) = %d incorrect; want %d", len(users), 1)
+	}
+
+	if users[0].Email != email3 {
+		t.Errorf("user.Email = %s incorrect; want %s", users[0].Email, email3)
 	}
 }

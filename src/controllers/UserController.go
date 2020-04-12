@@ -89,10 +89,59 @@ func UserGetFriends(w http.ResponseWriter, r *http.Request) {
 	utils.Respond(w, resp)
 }
 
-// UserGetFriendCommon Get common friend between 2 users
-func UserGetFriendCommon(w http.ResponseWriter, r *http.Request) {
-	resp := utils.Message(true, "User_GetFriendCommon")
-	resp["friends"] = nil
+// UserGetFriendsCommonRequest Request struct Get common friend between 2 emails
+// Use at UserGetFriendsCommon
+type UserGetFriendsCommonRequest struct {
+	Friends []string `json:"friends"`
+}
+
+// UserGetFriendsCommon Get common friend between 2 users
+// Example request { "friends": ["andy@example.com","john@example.com"]}
+func UserGetFriendsCommon(w http.ResponseWriter, r *http.Request) {
+	// Close DB
+	defer utils.DbClose()
+	var err error
+	var count, i int
+
+	// Decode request into struct UserGetFriendsCommonRequest
+	requestStruct := &UserGetFriendsCommonRequest{}
+	err = json.NewDecoder(r.Body).Decode(requestStruct)
+	if err != nil {
+		resp := utils.Message(false, "Error while decoding request body.")
+		utils.Respond(w, resp)
+		return
+	}
+
+	// Validate reuqest
+	count = len(requestStruct.Friends)
+	if count != 2 {
+		resp := utils.Message(false, "Friends must have 2 emails.")
+		utils.Respond(w, resp)
+		return
+	}
+
+	friendEmails := requestStruct.Friends
+	// Call repository to get data
+	users, err := repo.UserGetFriendsCommon(friendEmails[0], friendEmails[1])
+
+	if err != nil {
+		resp := utils.Message(false, err.Error())
+		utils.Respond(w, resp)
+		return
+	}
+
+	var emails []string
+	count = len(users)
+
+	if count > 0 {
+		for i = 0; i < count; i++ {
+			emails = append(emails, users[i].Email)
+		}
+	}
+
+	resp := utils.Message(true, "")
+	resp["friends"] = emails
+	resp["count"] = count
 	utils.Respond(w, resp)
 }
 
