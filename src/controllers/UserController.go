@@ -186,9 +186,49 @@ func UserSubscribe(w http.ResponseWriter, r *http.Request) {
 	utils.Respond(w, resp)
 }
 
-// UserBlock User Block
+// UserBlockequest use at UserBlock
+type UserBlockequest struct {
+	Requestor string `json:"requestor"`
+	Target    string `json:"target"`
+}
+
+// UserBlock As a user, I need an API to block updates from an email address.
 func UserBlock(w http.ResponseWriter, r *http.Request) {
-	resp := utils.Message(true, "User_Block")
-	resp["friends"] = nil
+	// Close DB
+	defer utils.DbClose()
+	var err error
+	var userRequestor, userTarget models.User
+
+	// Decode request into struct UserSubscribeRequest
+	requestStruct := &UserBlockequest{}
+	err = json.NewDecoder(r.Body).Decode(requestStruct)
+	if err != nil {
+		resp := utils.Message(false, "Error while decoding request body.")
+		utils.Respond(w, resp)
+		return
+	}
+
+	userRequestor, err = repo.UserGetByEmail(requestStruct.Requestor)
+	if err != nil {
+		resp := utils.Message(false, err.Error())
+		utils.Respond(w, resp)
+		return
+	}
+
+	userTarget, err = repo.UserGetByEmail(requestStruct.Target)
+	if err != nil {
+		resp := utils.Message(false, err.Error())
+		utils.Respond(w, resp)
+		return
+	}
+
+	_, err = repo.UserBlock(userRequestor, userTarget)
+	if err != nil {
+		resp := utils.Message(false, err.Error())
+		utils.Respond(w, resp)
+		return
+	}
+
+	resp := utils.Message(true, "")
 	utils.Respond(w, resp)
 }

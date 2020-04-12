@@ -28,12 +28,14 @@ func TestUserCreate(t *testing.T) {
 
 func TestUserGetByEmail(t *testing.T) {
 	u.DbTruncateTable("users")
+	var user models.User
+	var err error
 
 	// Init data
 	UserCreate("email@test.com")
 
 	// Test
-	user, err := UserGetByEmail("email@test.com")
+	user, err = UserGetByEmail("email@test.com")
 
 	if err != nil {
 		t.Errorf("error = %s; want nil", err.Error())
@@ -41,6 +43,13 @@ func TestUserGetByEmail(t *testing.T) {
 
 	if user.Email != "email@test.com" {
 		t.Errorf("user.email = %s; want email@test.com", user.Email)
+	}
+
+	// Test
+	user, err = UserGetByEmail("email1@test.com")
+	var exptectedMsg string = fmt.Sprintf("User %s not exits", "email1@test.com")
+	if err.Error() != exptectedMsg {
+		t.Errorf("error = %s, want '%s'", err.Error(), exptectedMsg)
 	}
 }
 
@@ -204,6 +213,38 @@ func TestUserSubscribe(t *testing.T) {
 
 	if relationship.User2ID != u2.ID {
 		t.Errorf("relationship.User1ID != u1.ID (%d != %d) ; want equal", relationship.User2ID, u2.ID)
+
+	}
+}
+
+func TestUserBlock(t *testing.T) {
+	u.DbTruncateTable("users")
+	u.DbTruncateTable("relationships")
+
+	var relationship models.Relationship
+
+	email1 := "andy@example.com"
+	email2 := "john@example.com"
+
+	requestor, _ := UserCreate(email1)
+	target, _ := UserCreate(email2)
+	relationship, _ = UserBlock(requestor, target)
+
+	if relationship.ID == 0 {
+		t.Errorf("relationship.ID = %d incorrect; want > 0", relationship.ID)
+	}
+
+	if relationship.Subscribe != configs.SUBSRIBE_NO {
+		t.Errorf("relationship.ISubscribeD = %d incorrect; want %d", relationship.ID, configs.SUBSRIBE_NO)
+	}
+
+	if relationship.User1ID != requestor.ID {
+		t.Errorf("relationship.User1ID != u1.ID (%d != %d) ; want equal", relationship.User1ID, requestor.ID)
+
+	}
+
+	if relationship.User2ID != target.ID {
+		t.Errorf("relationship.User1ID != u1.ID (%d != %d) ; want equal", relationship.User2ID, target.ID)
 
 	}
 }

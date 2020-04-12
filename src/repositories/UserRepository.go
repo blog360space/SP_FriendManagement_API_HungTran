@@ -26,6 +26,10 @@ func UserCreateFriend(email1, email2 string) (models.Relationship, error) {
 	db.Where("user1_id = ? AND user2_id = ?", user1.ID, user2.ID).First(&relationship)
 
 	if relationship.ID > 0 {
+		if relationship.FriendStatus == configs.FRIEND_STATUS_BLOCK {
+			return relationship, fmt.Errorf("Target %s Blocked Requestor %s", email2, email1)
+		}
+
 		relationship.FriendStatus = configs.FRIEND_STATUS_YES
 		db.Save(&relationship)
 		return relationship, nil
@@ -49,6 +53,10 @@ func UserGetByEmail(email string) (models.User, error) {
 	user.Email = ""
 
 	db.Where("email = ?", email).First(&user)
+
+	if user.ID == 0 {
+		return user, fmt.Errorf("User %s not exits", email)
+	}
 
 	return user, nil
 }
@@ -148,6 +156,30 @@ func UserSubscribe(requestor, target string) (models.Relationship, error) {
 	relationship.User2ID = user2.ID
 	relationship.FriendStatus = configs.FRIEND_STATUS_NO
 	relationship.Subscribe = configs.SUBSRIBE_YES
+	db.Create(&relationship)
+
+	return relationship, nil
+}
+
+// UserBlock As a user, I need an API to block updates from an email address.
+// {"requestor": "lisa@example.com","target": "john@example.com"}
+func UserBlock(requestor, target models.User) (models.Relationship, error) {
+	db := u.DbConn()
+	relationship := models.Relationship{}
+
+	db.Where("user1_id = ? AND user2_id = ?", requestor.ID, target.ID).First(&relationship)
+
+	if relationship.ID > 0 {
+		relationship.FriendStatus = configs.FRIEND_STATUS_BLOCK
+		relationship.Subscribe = configs.SUBSRIBE_NO
+		db.Save(&relationship)
+		return relationship, nil
+	}
+
+	relationship.User1ID = requestor.ID
+	relationship.User2ID = target.ID
+	relationship.FriendStatus = configs.FRIEND_STATUS_BLOCK
+	relationship.Subscribe = configs.SUBSRIBE_NO
 	db.Create(&relationship)
 
 	return relationship, nil
