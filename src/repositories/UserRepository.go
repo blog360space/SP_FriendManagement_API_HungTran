@@ -8,26 +8,16 @@ import (
 )
 
 // UserCreateFriend Create Friend Relationship
-func UserCreateFriend(email1, email2 string) (models.Relationship, error) {
+func UserCreateFriend(user1, user2 models.User) (models.Relationship, error) {
 	db := u.DbConn()
 
 	relationship := models.Relationship{}
 	// Check if email1 - email2 are friends ?
-	user1, _ := UserGetByEmail(email1)
-	if user1.ID == 0 {
-		return relationship, fmt.Errorf("User %s not exits", email1)
-	}
-
-	user2, _ := UserGetByEmail(email2)
-	if user2.ID == 0 {
-		return relationship, fmt.Errorf("User %s not exits", email2)
-	}
-
 	db.Where("user1_id = ? AND user2_id = ?", user1.ID, user2.ID).First(&relationship)
 
 	if relationship.ID > 0 {
 		if relationship.FriendStatus == configs.FRIEND_STATUS_BLOCK {
-			return relationship, fmt.Errorf("Target %s Blocked Requestor %s", email2, email1)
+			return relationship, fmt.Errorf("Target %s Blocked Requestor %s", user1.Email, user2.Email)
 		}
 
 		relationship.FriendStatus = configs.FRIEND_STATUS_YES
@@ -97,19 +87,9 @@ func UserGetFriendsByEmail(email string) ([]models.User, error) {
 }
 
 // UserGetFriendsCommon Get user friends common
-func UserGetFriendsCommon(email1, email2 string) ([]models.User, error) {
+func UserGetFriendsCommon(user1, user2 models.User) ([]models.User, error) {
 	db := u.DbConn()
 	var users = []models.User{}
-
-	user1, _ := UserGetByEmail(email1)
-	if user1.ID == 0 {
-		return users, fmt.Errorf("User %s not exits", email1)
-	}
-
-	user2, _ := UserGetByEmail(email2)
-	if user2.ID == 0 {
-		return users, fmt.Errorf("User %s not exits", email2)
-	}
 
 	sql := `SELECT *
 	FROM users
@@ -122,29 +102,19 @@ func UserGetFriendsCommon(email1, email2 string) ([]models.User, error) {
 	db.Raw(sql, user1.ID, user2.ID).Scan(&users)
 
 	if len(users) == 0 {
-		return users, fmt.Errorf("No common friend for %s and %s", email1, email2)
+		return users, fmt.Errorf("No common friend for %s and %s", user1.Email, user2.Email)
 	}
 
 	return users, nil
 }
 
 // UserSubscribe subscribe to updates from an email address.
-func UserSubscribe(requestor, target string) (models.Relationship, error) {
+func UserSubscribe(requestor, target models.User) (models.Relationship, error) {
 	db := u.DbConn()
 
 	relationship := models.Relationship{}
-	// Check if email1 - email2 are friends ?
-	user1, _ := UserGetByEmail(requestor)
-	if user1.ID == 0 {
-		return relationship, fmt.Errorf("Requestor %s not exits", requestor)
-	}
 
-	user2, _ := UserGetByEmail(target)
-	if user2.ID == 0 {
-		return relationship, fmt.Errorf("Target %s not exits", target)
-	}
-
-	db.Where("user1_id = ? AND user2_id = ?", user1.ID, user2.ID).First(&relationship)
+	db.Where("user1_id = ? AND user2_id = ?", requestor.ID, target.ID).First(&relationship)
 
 	if relationship.ID > 0 {
 		relationship.FriendStatus = configs.FRIEND_STATUS_YES
@@ -152,8 +122,8 @@ func UserSubscribe(requestor, target string) (models.Relationship, error) {
 		return relationship, nil
 	}
 
-	relationship.User1ID = user1.ID
-	relationship.User2ID = user2.ID
+	relationship.User1ID = requestor.ID
+	relationship.User2ID = target.ID
 	relationship.FriendStatus = configs.FRIEND_STATUS_NO
 	relationship.Subscribe = configs.SUBSRIBE_YES
 	db.Create(&relationship)

@@ -40,7 +40,22 @@ func UserCreateFriend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err1 := repo.UserCreateFriend(emails[0], emails[1])
+	var u1, u2 models.User
+	u1, err = repo.UserGetByEmail(emails[0])
+	if err != nil {
+		resp := utils.Message(false, err.Error())
+		utils.Respond(w, resp)
+		return
+	}
+
+	u2, err = repo.UserGetByEmail(emails[1])
+	if err != nil {
+		resp := utils.Message(false, err.Error())
+		utils.Respond(w, resp)
+		return
+	}
+
+	_, err1 := repo.UserCreateFriend(u1, u2)
 	if err1 != nil {
 		resp := utils.Message(false, err1.Error())
 		utils.Respond(w, resp)
@@ -60,6 +75,11 @@ type UserGetFriendsRequest struct {
 // Example request {"email": "andy@example.com"}
 func UserGetFriends(w http.ResponseWriter, r *http.Request) {
 	defer utils.DbClose()
+	if r.Method != "POST" {
+		resp := utils.Message(false, "Invalid method")
+		utils.Respond(w, resp)
+		return
+	}
 
 	requestStruct := &UserGetFriendsRequest{}
 	err := json.NewDecoder(r.Body).Decode(requestStruct)
@@ -101,6 +121,12 @@ type UserGetFriendsCommonRequest struct {
 func UserGetFriendsCommon(w http.ResponseWriter, r *http.Request) {
 	// Close DB
 	defer utils.DbClose()
+	if r.Method != "POST" {
+		resp := utils.Message(false, "Invalid method")
+		utils.Respond(w, resp)
+		return
+	}
+
 	var err error
 	var count, i int
 
@@ -122,8 +148,23 @@ func UserGetFriendsCommon(w http.ResponseWriter, r *http.Request) {
 	}
 
 	friendEmails := requestStruct.Friends
+	var u1, u2 models.User
+	u1, err = repo.UserGetByEmail(friendEmails[0])
+	if err != nil {
+		resp := utils.Message(false, err.Error())
+		utils.Respond(w, resp)
+		return
+	}
+
+	u2, err = repo.UserGetByEmail(friendEmails[1])
+	if err != nil {
+		resp := utils.Message(false, err.Error())
+		utils.Respond(w, resp)
+		return
+	}
+
 	// Call repository to get data
-	users, err := repo.UserGetFriendsCommon(friendEmails[0], friendEmails[1])
+	users, err := repo.UserGetFriendsCommon(u1, u2)
 
 	if err != nil {
 		resp := utils.Message(false, err.Error())
@@ -157,8 +198,15 @@ type UserSubscribeRequest struct {
 func UserSubscribe(w http.ResponseWriter, r *http.Request) {
 	// Close DB
 	defer utils.DbClose()
+	if r.Method != "POST" {
+		resp := utils.Message(false, "Invalid method")
+		utils.Respond(w, resp)
+		return
+	}
+
 	var err error
 	var relationship models.Relationship
+	var userRequestor, userTarget models.User
 
 	// Decode request into struct UserSubscribeRequest
 	requestStruct := &UserSubscribeRequest{}
@@ -169,7 +217,21 @@ func UserSubscribe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	relationship, err = repo.UserSubscribe(requestStruct.Requestor, requestStruct.Target)
+	userRequestor, err = repo.UserGetByEmail(requestStruct.Requestor)
+	if err != nil {
+		resp := utils.Message(false, err.Error())
+		utils.Respond(w, resp)
+		return
+	}
+
+	userTarget, err = repo.UserGetByEmail(requestStruct.Target)
+	if err != nil {
+		resp := utils.Message(false, err.Error())
+		utils.Respond(w, resp)
+		return
+	}
+
+	relationship, err = repo.UserSubscribe(userRequestor, userTarget)
 	if err != nil {
 		resp := utils.Message(false, err.Error())
 		utils.Respond(w, resp)
@@ -196,6 +258,12 @@ type UserBlockequest struct {
 func UserBlock(w http.ResponseWriter, r *http.Request) {
 	// Close DB
 	defer utils.DbClose()
+	if r.Method != "POST" {
+		resp := utils.Message(false, "Invalid method")
+		utils.Respond(w, resp)
+		return
+	}
+
 	var err error
 	var userRequestor, userTarget models.User
 
