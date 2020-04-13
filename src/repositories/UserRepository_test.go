@@ -207,3 +207,36 @@ func TestUserBlock(t *testing.T) {
 
 	}
 }
+
+func TestUserGetSubscribeUser(t *testing.T) {
+	u.DbTruncateTable("users")
+	u.DbTruncateTable("relationships")
+
+	var u1, u2, u3 models.User
+
+	u1, _ = UserCreate("user1@example.com")
+	u2, _ = UserCreate("user2@example.com")
+	u3, _ = UserCreate("user3@example.com")
+
+	UserSubscribe(u2, u1)
+	UserSubscribe(u3, u1)
+
+	users, err := UserGetSubscribeUsers(u1)
+
+	if err != nil {
+		t.Errorf("UserGetSubscribeUsers() err='%s', want nil", err.Error())
+	}
+
+	countSubscribe := len(users)
+	if countSubscribe != 2 {
+		t.Errorf("UserGetSubscribeUsers() countSubscribe='%d', want %d", countSubscribe, 2)
+	}
+
+	if users[0].Email != u3.Email {
+		t.Errorf("UserGetSubscribeUsers() users[0]='%s', want %s", users[0].Email, u3.Email)
+	}
+
+	if users[1].Email != u2.Email {
+		t.Errorf("UserGetSubscribeUsers() users[1]='%s', want %s", users[1].Email, u2.Email)
+	}
+}

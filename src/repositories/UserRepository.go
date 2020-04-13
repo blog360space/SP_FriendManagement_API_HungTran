@@ -154,3 +154,23 @@ func UserBlock(requestor, target models.User) (models.Relationship, error) {
 
 	return relationship, nil
 }
+
+// UserGetSubscribeUsers get users subscribed
+func UserGetSubscribeUsers(user models.User) ([]models.User, error) {
+	db := u.DbConn()
+
+	var subscribeUsers []models.User
+
+	sql := `SELECT *
+	FROM users u
+	WHERE id IN (
+		SELECT r.user1_id
+		FROM relationships r
+		WHERE r.user2_id = ?
+	)
+	ORDER BY u.id DESC`
+
+	db.Raw(sql, user.ID).Scan(&subscribeUsers)
+
+	return subscribeUsers, nil
+}
