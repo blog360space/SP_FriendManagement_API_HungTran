@@ -1,7 +1,10 @@
 # SP_FriendManagement_API_HungTran
-A simple test api with golang.
+A simple test api with golang run in port ```8000```
+
 ## Required
-Mysql database mysql connection
+- Mysql database mysql connection
+- Golang installed
+
 ## Install
 Create 2 databases ```friend_manager``` for the main program, ```friend_manager_test``` for unittest.
 Use dump ```script db/friend_managerment.sql``` into database ```friend_manager``` and ```friend_manager_test```.
@@ -9,6 +12,18 @@ At the root of this project and run the following command:
 ```
 go get -u github.com/go-sql-driver/mysql
 go get -u github.com/jinzhu/gorm
+```
+To change db connection, please update file ```utils/Db.go```
+To Start project:
+```
+cd rootOfThisProject
+go run main.go
+```
+
+To run unitest:
+```
+cd rootOfThisProject/src/repositories
+go test
 ```
 ## Feature
 
