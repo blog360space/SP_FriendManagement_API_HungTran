@@ -1,4 +1,4 @@
 /pkg/*
-src/github.com/ramya-rao-a/
+/src/github.com/*
 .project
 /bin/*
