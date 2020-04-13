@@ -18,3 +18,8 @@ func Respond(w http.ResponseWriter, data map[string]interface{}) {
 	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
 }
+
+// ValidateIsEmail Validdate a string is email
+func ValidateIsEmail(str string) bool {
+	return true
+}

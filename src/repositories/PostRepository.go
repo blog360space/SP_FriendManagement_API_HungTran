@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"models"
+	"strings"
 	"utils"
 )
 
@@ -21,6 +22,21 @@ func PostGetPostRecipients(sender models.User, post models.Post) ([]models.User,
 	}
 
 	recipients = append(subscribers)
+	arrStr := strings.Split(post.Text, " ")
+	countStr := len(arrStr)
+	var userTmp models.User
+	for i := 0; i < countStr; i++ {
+		if utils.ValidateIsEmail(arrStr[i]) == false {
+			continue
+		}
+
+		userTmp, _ = UserGetByEmail(arrStr[i])
+		if userTmp.ID == 0 {
+			// @todo errrmsg here
+			continue
+		}
+		recipients = append(recipients, userTmp)
+	}
 
 	return recipients, nil
 }
