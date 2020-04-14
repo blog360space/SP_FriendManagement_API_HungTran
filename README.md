@@ -1,5 +1,5 @@
 # SP_FriendManagement_API_HungTran
-A simple test api with golang run in port ```8000```
+A simple application RESTful API with Golang.
 
 ## Required
 - Mysql database mysql connection
@@ -16,10 +16,6 @@ Project have 5 packages:
 - models: Define structures models related to database table schema.
 - repositories: Process logic business and actions query, update database.
 - utils: Common functions: Db connect, Response json.
-### UnitTest
-There 2 databases wit the same schema 1 for main program and 1 for Unit Test. 
-
-The testing mainly in the repositories package.
 
 ## Install
 Application config in the src/configs/Config.example. Copy it to Config.go. There are some constants:
@@ -46,14 +42,14 @@ go get gopkg.in/go-playground/validator.v9
 ```
 To Start project:
 ```
-cd rootOfThisProject
+cd /path/to/project
 # Run run full test
 go run main.go
 ```
 
 To run unitest:
 ```
-cd rootOfThisProject/src/repositories
+cd /path/to/project/src/repositories
 # Run run full test
 go test
 
@@ -239,6 +235,32 @@ On error: HttpStatus = 400
 ```json
 {
     "message": "User blablabla@example.com not exits",
+    "success": false
+}
+```
+
+### 6. As a user, I need an API to register my email account to the application Friend Management.
+Uri:
+```
+/api/user/register
+```
+
+The API should receive the following JSON request:
+```json
+{
+    "email": "john@example.com"
+}
+```
+On success: HttpStatus = 200
+```json
+{
+    "success": true
+}
+```
+On error: HttpStatus = 400
+```json
+{
+    "message": "Email kate@example.com is exits, please use other email",
     "success": false
 }
 ```
