@@ -4,3 +4,4 @@
 /bin/*
 src/gopkg.in/*
 /.idea/*
+src/configs/Config.go

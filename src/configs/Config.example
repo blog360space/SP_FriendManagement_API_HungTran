@@ -1,0 +1,10 @@
+package configs
+
+const DB_NAME = "friend_managerment"
+const DB_NAME_TEST = "friend_managerment_test"
+const DB_USER = "root"
+const DB_PASSWORD = "123456"
+const DB_HOST = "localhost"
+const DB_DRIVER = "mysql"
+// Application port
+const APP_PORT = "8000"
