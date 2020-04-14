@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+
 	// No use
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
@@ -24,7 +25,7 @@ func DbConn() *gorm.DB {
 	}
 
 	dbConn, err := gorm.Open(configs.DB_DRIVER,
-		fmt.Sprintf("%s:%s@(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		fmt.Sprintf("%s:%s@(%s)/%s?charset=utf8&parseTime=True&loc=UTC",
 			configs.DB_USER, configs.DB_PASSWORD, configs.DB_HOST, dbName))
 
 	if err != nil {
