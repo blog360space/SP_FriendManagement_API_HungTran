@@ -239,7 +239,7 @@ On error: HttpStatus = 400
 }
 ```
 
-### 6. As a user, I need an API to register my email account to the application Friend Management.
+### 7. As a user, I need an API to register my email account to the application Friend Management.
 Uri:
 ```
 /api/user/register
