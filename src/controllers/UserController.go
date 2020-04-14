@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	//"fmt"
 	"models"
 	"net/http"
 	repo "repositories"
@@ -21,7 +22,7 @@ func UserCreateFriend(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != "POST" {
 		resp := utils.Message(false, "Invalid method")
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
@@ -29,14 +30,14 @@ func UserCreateFriend(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(requestData)
 	if err != nil {
 		resp := utils.Message(false, "Error while decoding request body.")
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
 	emails := requestData.Friends
 	if len(emails) != 2 {
 		resp := utils.Message(false, "Friends must have 2 emails")
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
@@ -44,26 +45,26 @@ func UserCreateFriend(w http.ResponseWriter, r *http.Request) {
 	u1, err = repo.UserGetByEmail(emails[0])
 	if err != nil {
 		resp := utils.Message(false, err.Error())
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
 	u2, err = repo.UserGetByEmail(emails[1])
 	if err != nil {
 		resp := utils.Message(false, err.Error())
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
 	_, err1 := repo.UserCreateFriend(u1, u2)
 	if err1 != nil {
 		resp := utils.Message(false, err1.Error())
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
 	resp := utils.Message(true, "")
-	utils.Respond(w, resp)
+	utils.Respond(w, resp, http.StatusOK)
 }
 
 // UserGetFriendsRequest struct when request UserGetFriends
@@ -77,7 +78,7 @@ func UserGetFriends(w http.ResponseWriter, r *http.Request) {
 	defer utils.DbClose()
 	if r.Method != "POST" {
 		resp := utils.Message(false, "Invalid method")
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
@@ -85,7 +86,7 @@ func UserGetFriends(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(requestStruct)
 	if err != nil {
 		resp := utils.Message(false, "Error while decoding request body.")
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
@@ -93,7 +94,7 @@ func UserGetFriends(w http.ResponseWriter, r *http.Request) {
 	users, err := repo.UserGetFriendsByEmail(email)
 	if err != nil {
 		resp := utils.Message(false, err.Error())
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
@@ -107,7 +108,7 @@ func UserGetFriends(w http.ResponseWriter, r *http.Request) {
 	resp := utils.Message(true, "")
 	resp["friends"] = emails
 	resp["count"] = count
-	utils.Respond(w, resp)
+	utils.Respond(w, resp, http.StatusOK)
 }
 
 // UserGetFriendsCommonRequest Request struct Get common friend between 2 emails
@@ -123,7 +124,7 @@ func UserGetFriendsCommon(w http.ResponseWriter, r *http.Request) {
 	defer utils.DbClose()
 	if r.Method != "POST" {
 		resp := utils.Message(false, "Invalid method")
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
@@ -135,7 +136,7 @@ func UserGetFriendsCommon(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(requestStruct)
 	if err != nil {
 		resp := utils.Message(false, "Error while decoding request body.")
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
@@ -143,7 +144,7 @@ func UserGetFriendsCommon(w http.ResponseWriter, r *http.Request) {
 	count = len(requestStruct.Friends)
 	if count != 2 {
 		resp := utils.Message(false, "Friends must have 2 emails.")
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
@@ -152,14 +153,14 @@ func UserGetFriendsCommon(w http.ResponseWriter, r *http.Request) {
 	u1, err = repo.UserGetByEmail(friendEmails[0])
 	if err != nil {
 		resp := utils.Message(false, err.Error())
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
 	u2, err = repo.UserGetByEmail(friendEmails[1])
 	if err != nil {
 		resp := utils.Message(false, err.Error())
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
@@ -168,7 +169,7 @@ func UserGetFriendsCommon(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		resp := utils.Message(false, err.Error())
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
@@ -184,7 +185,7 @@ func UserGetFriendsCommon(w http.ResponseWriter, r *http.Request) {
 	resp := utils.Message(true, "")
 	resp["friends"] = emails
 	resp["count"] = count
-	utils.Respond(w, resp)
+	utils.Respond(w, resp, http.StatusOK)
 }
 
 // UserSubscribeRequest use at UserSubscribe
@@ -200,7 +201,7 @@ func UserSubscribe(w http.ResponseWriter, r *http.Request) {
 	defer utils.DbClose()
 	if r.Method != "POST" {
 		resp := utils.Message(false, "Invalid method")
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
@@ -213,39 +214,39 @@ func UserSubscribe(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(requestStruct)
 	if err != nil {
 		resp := utils.Message(false, "Error while decoding request body.")
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
 	userRequestor, err = repo.UserGetByEmail(requestStruct.Requestor)
 	if err != nil {
 		resp := utils.Message(false, err.Error())
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
 	userTarget, err = repo.UserGetByEmail(requestStruct.Target)
 	if err != nil {
 		resp := utils.Message(false, err.Error())
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
 	relationship, err = repo.UserSubscribe(userRequestor, userTarget)
 	if err != nil {
 		resp := utils.Message(false, err.Error())
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
 	if relationship.ID == 0 {
 		resp := utils.Message(false, err.Error())
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
 	resp := utils.Message(true, "")
-	utils.Respond(w, resp)
+	utils.Respond(w, resp, http.StatusOK)
 }
 
 // UserBlockequest use at UserBlock
@@ -260,7 +261,7 @@ func UserBlock(w http.ResponseWriter, r *http.Request) {
 	defer utils.DbClose()
 	if r.Method != "POST" {
 		resp := utils.Message(false, "Invalid method")
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
@@ -272,31 +273,68 @@ func UserBlock(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(requestStruct)
 	if err != nil {
 		resp := utils.Message(false, "Error while decoding request body.")
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
 	userRequestor, err = repo.UserGetByEmail(requestStruct.Requestor)
 	if err != nil {
 		resp := utils.Message(false, err.Error())
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
 	userTarget, err = repo.UserGetByEmail(requestStruct.Target)
 	if err != nil {
 		resp := utils.Message(false, err.Error())
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
 	_, err = repo.UserBlock(userRequestor, userTarget)
 	if err != nil {
 		resp := utils.Message(false, err.Error())
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
 	resp := utils.Message(true, "")
-	utils.Respond(w, resp)
+	utils.Respond(w, resp, http.StatusOK)
+}
+
+// UserRegisterRequest use at UserRegister
+type UserRegisterRequest struct {
+	Email string `json:"email"`
+}
+// UserRegister Register new user
+func UserRegister(w http.ResponseWriter, r *http.Request)  {
+	defer utils.DbClose()
+	if r.Method != "POST" {
+		resp := utils.Message(false, "Invalid method")
+		utils.Respond(w, resp, http.StatusBadRequest)
+		return
+	}
+
+	var err error
+	var user models.User
+
+	requestStruct := &UserRegisterRequest{}
+	err = json.NewDecoder(r.Body).Decode(requestStruct)
+	if err != nil {
+		resp := utils.Message(false, "Error while decoding request body.")
+		utils.Respond(w, resp, http.StatusBadRequest)
+		return
+	}
+
+	email := requestStruct.Email
+	user, err = repo.UserRegister(email)
+	if (err != nil) {
+		resp := utils.Message(false, err.Error())
+		utils.Respond(w, resp, http.StatusBadRequest)
+		return
+	}
+
+	resp := utils.Message(true, "")
+	resp["email"] = user.Email
+	utils.Respond(w, resp, http.StatusOK)
 }

@@ -22,7 +22,7 @@ func PostCreate(w http.ResponseWriter, r *http.Request) {
 	defer utils.DbClose()
 	if r.Method != "POST" {
 		resp := utils.Message(false, "Invalid method")
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
@@ -35,7 +35,7 @@ func PostCreate(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(requestStruct)
 	if err != nil {
 		resp := utils.Message(false, "Error while decoding request body.")
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
@@ -43,27 +43,27 @@ func PostCreate(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		resp := utils.Message(false, err.Error())
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
 	if requestStruct.Text == "" {
 		resp := utils.Message(false, "Post content is empty")
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
 	post, err = repo.PostCreatePost(sender, requestStruct.Text)
 	if err != nil {
 		resp := utils.Message(false, err.Error())
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
 	recipients, err = repo.PostGetPostRecipients(sender, post)
 	if err != nil {
 		resp := utils.Message(false, err.Error())
-		utils.Respond(w, resp)
+		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
@@ -76,5 +76,5 @@ func PostCreate(w http.ResponseWriter, r *http.Request) {
 
 	resp := utils.Message(true, "")
 	resp["recipients"] = recipientEmails
-	utils.Respond(w, resp)
+	utils.Respond(w, resp, http.StatusOK)
 }

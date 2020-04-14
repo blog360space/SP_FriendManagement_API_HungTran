@@ -2,3 +2,5 @@
 /src/github.com/*
 .project
 /bin/*
+src/gopkg.in/*
+/.idea/*

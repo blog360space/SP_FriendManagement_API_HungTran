@@ -14,8 +14,9 @@ func Message(status bool, message string) map[string]interface{} {
 }
 
 // Respond json to browser
-func Respond(w http.ResponseWriter, data map[string]interface{}) {
+func Respond(w http.ResponseWriter, data map[string]interface{}, statusCode int) {
 	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(data)
 }
 

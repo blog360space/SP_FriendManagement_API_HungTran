@@ -19,6 +19,8 @@ func main() {
 
 	http.HandleFunc("/api/user/block", c.UserBlock)
 
+	http.HandleFunc("/api/user/register", c.UserRegister)
+
 	http.HandleFunc("/api/post/create", c.PostCreate)
 
 	err := http.ListenAndServe(":8000", nil)
