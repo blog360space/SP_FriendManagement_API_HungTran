@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"models"
 	u "utils"
+
+	"gopkg.in/go-playground/validator.v9"
 )
 
 // UserCreateFriend Create Friend Relationship
@@ -41,6 +43,12 @@ func UserGetByEmail(email string) (models.User, error) {
 	user := models.User{}
 	user.ID = 0
 	user.Email = ""
+
+	validate := validator.New()
+	err := validate.Var(email, "email")
+	if err != nil {
+		return user, fmt.Errorf("Please input a valid email address")
+	}
 
 	db.Where("email = ?", email).First(&user)
 
@@ -173,4 +181,24 @@ func UserGetSubscribeUsers(user models.User) ([]models.User, error) {
 	db.Raw(sql, user.ID).Scan(&subscribeUsers)
 
 	return subscribeUsers, nil
+}
+
+// UserRegister
+func UserRegister(email string) (models.User, error) {
+	var err error
+	var user models.User
+	// validate email
+	validate := validator.New()
+	err = validate.Var(email, "email")
+	if err != nil {
+		return user, fmt.Errorf("Please input a valid email address")
+	}
+	user, err = UserGetByEmail(email)
+	if user.ID > 0 {
+		return user, fmt.Errorf("Email %s is exits, please use other email", email)
+	}
+
+	user, err = UserCreate(email)
+
+	return user, err
 }

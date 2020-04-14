@@ -31,6 +31,11 @@ func TestUserGetByEmail(t *testing.T) {
 	var user models.User
 	var err error
 
+	_, err = UserGetByEmail("blabla")
+	if (err.Error() != "Please input a valid email address") {
+		t.Errorf("error = %s; want 'Please input a valid email address'", err.Error())
+	}
+
 	// Init data
 	UserCreate("email@test.com")
 
@@ -238,5 +243,40 @@ func TestUserGetSubscribeUser(t *testing.T) {
 
 	if users[1].Email != u2.Email {
 		t.Errorf("UserGetSubscribeUsers() users[1]='%s', want %s", users[1].Email, u2.Email)
+	}
+}
+
+func TestUserRegister(t *testing.T)  {
+	u.DbTruncateTable("users")
+	var err error
+	var u2 models.User
+	var expectMsg string
+
+	expectMsg = "Please input a valid email address"
+	_, err = UserRegister("invalid email")
+
+	if err!= nil && err.Error() != expectMsg {
+		t.Errorf("UserRegister() err='%s', want'%s'", err.Error(), expectMsg)
+	}
+
+	UserCreate("user1@example.com");
+	_, err = UserRegister("user1@example.com");
+	expectMsg = fmt.Sprintf("Email %s is exits, please use other email", "user1@example.com")
+
+	if err!= nil && err.Error() != expectMsg {
+		t.Errorf("UserRegister() err='%s', want'%s'", err.Error(), expectMsg)
+	}
+
+	u2, err = UserRegister("user2@example.com");
+	if err != nil {
+		t.Errorf("UserRegister() err = %s; want nil", err.Error())
+	}
+
+	if u2.ID == 0 {
+		t.Errorf("UserRegister() u2.ID = %d; want > 0", u2.ID)
+	}
+
+	if u2.Email != "user2@example.com" {
+		t.Errorf("UserRegister() u2.Email = %s; want %s", u2.Email, "user2@example.com")
 	}
 }

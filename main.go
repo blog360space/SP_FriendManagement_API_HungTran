@@ -1,6 +1,7 @@
 package main
 
 import (
+	"configs"
 	c "controllers"
 	"fmt"
 	"net/http"
@@ -19,9 +20,11 @@ func main() {
 
 	http.HandleFunc("/api/user/block", c.UserBlock)
 
+	http.HandleFunc("/api/user/register", c.UserRegister)
+
 	http.HandleFunc("/api/post/create", c.PostCreate)
 
-	err := http.ListenAndServe(":8000", nil)
+	err := http.ListenAndServe(":" + configs.APP_PORT, nil)
 	if err != nil {
 		fmt.Print(err)
 	}
