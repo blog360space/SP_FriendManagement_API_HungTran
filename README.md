@@ -6,8 +6,7 @@ A simple test api with golang run in port ```8000```
 - Golang installed
 
 ## Technical Stack
-This Friends Management API service is a RESTful web API built on Golang, HTTP, GORM, Mysql and Unit Test 
-by testify with 90% statement coverage.
+This Friends Management API service is a RESTful web API built on Golang, HTTP, GORM, Mysql and Unit Test with 90% statement coverage.
 
 ### Project Structure
 Project have 5 packages:
@@ -23,27 +22,43 @@ There 2 databases wit the same schema 1 for main program and 1 for Unit Test.
 The testing mainly in the repositories package.
 
 ## Install
-Create 2 databases ```friend_manager``` for the main program, ```friend_manager_test``` for unittest.
-Use dump ```script db/friend_managerment.sql``` into database ```friend_manager``` and ```friend_manager_test```.
+Application config in the src/configs/Config.example. Copy it to Config.go. There are some constants:
+```go
+// Application Database
+const DB_NAME = "friend_managerment"
+// Testing only Database name
+const DB_NAME_TEST = "friend_managerment_test"
+
+const DB_USER = "root"
+const DB_PASSWORD = "123456"
+const DB_HOST = "localhost"
+const DB_DRIVER = "mysql"
+
+// Application port
+const APP_PORT = "8000"
+```
+
 At the root of this project and run the following command:
 ```
 go get -u github.com/go-sql-driver/mysql
 go get -u github.com/jinzhu/gorm
+go get gopkg.in/go-playground/validator.v9
 ```
-To change db connection, please update file ```utils/Db.go```
 To Start project:
 ```
 cd rootOfThisProject
 # Run run full test
 go run main.go
-# Run test with coverage
-go test -cover
 ```
 
 To run unitest:
 ```
 cd rootOfThisProject/src/repositories
+# Run run full test
 go test
+
+# Run test with coverage
+go test -cover
 ```
 ## API Details
 
