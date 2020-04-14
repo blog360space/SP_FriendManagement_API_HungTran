@@ -24,7 +24,7 @@ func main() {
 
 	http.HandleFunc("/api/post/create", c.PostCreate)
 
-	err := http.ListenAndServe(configs.APP_PORT, nil)
+	err := http.ListenAndServe(":" + configs.APP_PORT, nil)
 	if err != nil {
 		fmt.Print(err)
 	}
