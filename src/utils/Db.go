@@ -4,8 +4,6 @@ import (
 	"configs"
 	"flag"
 	"fmt"
-	"os"
-
 	// No use
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
@@ -30,7 +28,6 @@ func DbConn() *gorm.DB {
 
 	if err != nil {
 		fmt.Println("Opt! Db connection error. Check configs/Config.go or copy Config.example to Config.go")
-		os.Exit(1)
 	}
 	return dbConn
 }
