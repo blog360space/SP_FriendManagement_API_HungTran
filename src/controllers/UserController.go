@@ -41,22 +41,22 @@ func UserCreateFriend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var u1, u2 models.User
-	u1, err = repo.UserGetByEmail(emails[0])
+	var requestor, target models.User
+	requestor, err = repo.UserGetByEmail(emails[0])
 	if err != nil {
 		resp := utils.Message(false, err.Error())
 		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
-	u2, err = repo.UserGetByEmail(emails[1])
+	target, err = repo.UserGetByEmail(emails[1])
 	if err != nil {
 		resp := utils.Message(false, err.Error())
 		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
-	_, err1 := repo.UserCreateFriend(u1, u2)
+	_, err1 := repo.UserCreateFriend(requestor, target)
 	if err1 != nil {
 		resp := utils.Message(false, err1.Error())
 		utils.Respond(w, resp, http.StatusBadRequest)
@@ -149,15 +149,15 @@ func UserGetFriendsCommon(w http.ResponseWriter, r *http.Request) {
 	}
 
 	friendEmails := requestStruct.Friends
-	var u1, u2 models.User
-	u1, err = repo.UserGetByEmail(friendEmails[0])
+	var requestor, target models.User
+	requestor, err = repo.UserGetByEmail(friendEmails[0])
 	if err != nil {
 		resp := utils.Message(false, err.Error())
 		utils.Respond(w, resp, http.StatusBadRequest)
 		return
 	}
 
-	u2, err = repo.UserGetByEmail(friendEmails[1])
+	target, err = repo.UserGetByEmail(friendEmails[1])
 	if err != nil {
 		resp := utils.Message(false, err.Error())
 		utils.Respond(w, resp, http.StatusBadRequest)
@@ -165,7 +165,7 @@ func UserGetFriendsCommon(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Call repository to get data
-	users, err := repo.UserGetFriendsCommon(u1, u2)
+	users, err := repo.UserGetFriendsCommon(requestor, target)
 
 	if err != nil {
 		resp := utils.Message(false, err.Error())

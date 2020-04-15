@@ -10,8 +10,8 @@ CREATE TABLE `posts` (
 
 CREATE TABLE `relationships` (
    `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `user1_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `user2_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `requestor_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `target_id` int(10) unsigned NOT NULL DEFAULT '0',
   `subscribe` smallint(5) unsigned NOT NULL DEFAULT '0',
   `friend_status` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT '0: friend request, 1: friend: 2 block',
   PRIMARY KEY (`id`)

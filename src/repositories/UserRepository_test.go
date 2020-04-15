@@ -62,16 +62,16 @@ func TestUserCreateFriendSucess(t *testing.T) {
 	u.DbTruncateTable("users")
 	u.DbTruncateTable("relationships")
 
-	user1, err1 := UserCreate("andy@example.com")
-	user2, err2 := UserCreate("john@example.com")
+	requestor, err1 := UserCreate("andy@example.com")
+	target, err2 := UserCreate("john@example.com")
 
-	relationship, err := UserCreateFriend(user1, user2)
+	relationship, err := UserCreateFriend(requestor, target)
 	if err != nil {
 		t.Errorf("error = %s; want nil", err.Error())
 	}
 
-	if relationship.User1ID != user1.ID || relationship.User2ID != user2.ID {
-		t.Errorf("User1ID != user1.ID OR relationship.User2ID != user2.ID")
+	if relationship.RequestorID != requestor.ID || relationship.TargetID != target.ID {
+		t.Errorf("requestorID != requestor.ID OR relationship.TargetID != target.ID")
 	}
 
 	if err1 != nil {
@@ -83,7 +83,7 @@ func TestUserCreateFriendSucess(t *testing.T) {
 	}
 
 	// Update relationship
-	relationship1, _ := UserCreateFriend(user1, user2)
+	relationship1, _ := UserCreateFriend(requestor, target)
 
 	if relationship1.ID != relationship.ID {
 		t.Errorf("Update exits relationship error")
@@ -173,13 +173,13 @@ func TestUserSubscribe(t *testing.T) {
 		t.Errorf("relationship.ISubscribeD = %d incorrect; want %d", relationship.ID, configs.SUBSRIBE_YES)
 	}
 
-	if relationship.User1ID != requestor.ID {
-		t.Errorf("relationship.User1ID != u1.ID (%d != %d) ; want equal", relationship.User1ID, requestor.ID)
+	if relationship.RequestorID != requestor.ID {
+		t.Errorf("relationship.RequestorID != u1.ID (%d != %d) ; want equal", relationship.RequestorID, requestor.ID)
 
 	}
 
-	if relationship.User2ID != target.ID {
-		t.Errorf("relationship.User1ID != u1.ID (%d != %d) ; want equal", relationship.User2ID, target.ID)
+	if relationship.TargetID != target.ID {
+		t.Errorf("relationship.RequestorID != u1.ID (%d != %d) ; want equal", relationship.TargetID, target.ID)
 
 	}
 }
@@ -202,13 +202,13 @@ func TestUserBlock(t *testing.T) {
 		t.Errorf("relationship.ISubscribeD = %d incorrect; want %d", relationship.ID, configs.SUBSRIBE_NO)
 	}
 
-	if relationship.User1ID != requestor.ID {
-		t.Errorf("relationship.User1ID != u1.ID (%d != %d) ; want equal", relationship.User1ID, requestor.ID)
+	if relationship.RequestorID != requestor.ID {
+		t.Errorf("relationship.RequestorID != u1.ID (%d != %d) ; want equal", relationship.RequestorID, requestor.ID)
 
 	}
 
-	if relationship.User2ID != target.ID {
-		t.Errorf("relationship.User1ID != u1.ID (%d != %d) ; want equal", relationship.User2ID, target.ID)
+	if relationship.TargetID != target.ID {
+		t.Errorf("relationship.RequestorID != u1.ID (%d != %d) ; want equal", relationship.TargetID, target.ID)
 
 	}
 }
@@ -219,8 +219,8 @@ func TestUserGetSubscribeUser(t *testing.T) {
 
 	var u1, u2, u3 models.User
 
-	u1, _ = UserCreate("user1@example.com")
-	u2, _ = UserCreate("user2@example.com")
+	u1, _ = UserCreate("requestor@example.com")
+	u2, _ = UserCreate("target@example.com")
 	u3, _ = UserCreate("user3@example.com")
 
 	UserSubscribe(u2, u1)
@@ -259,15 +259,15 @@ func TestUserRegister(t *testing.T)  {
 		t.Errorf("UserRegister() err='%s', want'%s'", err.Error(), expectMsg)
 	}
 
-	UserCreate("user1@example.com");
-	_, err = UserRegister("user1@example.com");
-	expectMsg = fmt.Sprintf("Email %s is exits, please use other email", "user1@example.com")
+	UserCreate("requestor@example.com");
+	_, err = UserRegister("requestor@example.com");
+	expectMsg = fmt.Sprintf("Email %s is exits, please use other email", "requestor@example.com")
 
 	if err!= nil && err.Error() != expectMsg {
 		t.Errorf("UserRegister() err='%s', want'%s'", err.Error(), expectMsg)
 	}
 
-	u2, err = UserRegister("user2@example.com");
+	u2, err = UserRegister("target@example.com");
 	if err != nil {
 		t.Errorf("UserRegister() err = %s; want nil", err.Error())
 	}
@@ -276,7 +276,7 @@ func TestUserRegister(t *testing.T)  {
 		t.Errorf("UserRegister() u2.ID = %d; want > 0", u2.ID)
 	}
 
-	if u2.Email != "user2@example.com" {
-		t.Errorf("UserRegister() u2.Email = %s; want %s", u2.Email, "user2@example.com")
+	if u2.Email != "target@example.com" {
+		t.Errorf("UserRegister() u2.Email = %s; want %s", u2.Email, "target@example.com")
 	}
 }
