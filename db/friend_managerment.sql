@@ -1,158 +1,35 @@
-Script started on 2020-04-13 15:42:13+0700
-At the root of this project and run the following command:
-```
-go get -u github.com/go-sql-driver/mysql
-go get -u github.com/jinzhu/gorm
-```
-## Feature
+CREATE TABLE `posts` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL,
+  `text` varchar(100) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` time DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=latin1;
 
-### 1. As a user, I need an API to create a friend connection between two email addresses.
+CREATE TABLE `relationships` (
+   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user1_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `user2_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `subscribe` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `friend_status` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT '0: friend request, 1: friend: 2 block',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 
-Uri
-```
-/api/user/create_friend
-```
-Method: POST
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `email` varchar(100) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
 
-The API should receive the following JSON request:
-```
-{
-    "friends":
-    [
-        "andy@example.com"
-        "john@example.com"
-    ]
-}
-```
-The API should return the following JSON response on success:
-```
-{
-    "success": true
-}
-```
-### 2. As a user, I need an API to retrieve the friends list for an email address.
-Uri
-```
-/api/user/get_friend
-```
-The API should receive the following JSON request:
-```
-    {
-        "email": "andy@example.com"
-    }
-```
-The API should return the following JSON response on success:
-```
-{
-    "success": true,
-    "friends" :
-    [
-        "john@example.com"
-    ],
-    "count" : 1
-    }
-```
-### 3. As a user, I need an API to retrieve the common friends list between two email addresses.
-Uri
-```
-/api/user/get_friend_common
-```
-The API should receive the following JSON request:
-```
-{
-    "friends":
-    [
-        "andy@example.com"
-        "john@example.com"
-    ]
-}
-```
-The API should return the following JSON response on success:
-```
-    {
-        "success": true,
-        "friends" :
-        [
-            "common@example.com"
-        ],
-        "count" : 1
-    }
-```
-
-### 4. As a user, I need an API to subscribe to updates from an email address.
-Uri
-```
-/api/user/subscribe
-```
-The API should receive the following JSON request:
-```
-    {
-        "requestor": "lisa@example.com",
-        "target": "john@example.com"
-    }
-```
-The API should return the following JSON response on success:
-```
-    {
-        "success": true
-    }
-```
-
-### 5. As a user, I need an API to block updates from an email address.
-Uri
-```
-/api/user/block
-```
-
-Suppose "andy@example.com" blocks "john@example.com":
-The API should receive the following JSON request:
-```
-    {
-        "requestor": "andy@example.com",
-        "target": "john@example.com"
-    }
-```
-The API should return the following JSON response on success:
-```
-    {
-        "success": true
-    }
-```
-
-### 6. As a user, I need an API to retrieve all email addresses that can receive updates from an email address.
-Uri
-```
-/api/post/create
-```
-
-The API should receive the following JSON request:
-```
-    {
-        "sender": "john@example.com",
-        "text": "Hello World! kate@example.com"
-    }
-```
-The API should return the following JSON response on success:
-```
-    {
-        "success": true
-        "recipients":
-        [
-            "lisa@example.com",
-            "kate@example.com"
-        ]
-    }
-```
-]0;hungtran@hungtranpc: ~/coding/golang/friend-manager[01;32mhungtran@hungtranpc[00m:[01;34m~/coding/golang/friend-manager[00m$ At the root of this project and run the following command:
-At: command not found
-]0;hungtran@hungtranpc: ~/coding/golang/friend-manager[01;32mhungtran@hungtranpc[00m:[01;34m~/coding/golang/friend-manager[00m$ ```
-> go get -u github.com/go-sql-driver/mysql
-> go get -u github.com/jinzhu/gorm
-> ```
-^C
-]0;hungtran@hungtranpc: ~/coding/golang/friend-manager[01;32mhungtran@hungtranpc[00m:[01;34m~/coding/golang/friend-manager[00m$ git stat^C
-]0;hungtran@hungtranpc: ~/coding/golang/friend-manager[01;32mhungtran@hungtranpc[00m:[01;34m~/coding/golang/friend-manager[00m$ ^C
-]0;hungtran@hungtranpc: ~/coding/golang/friend-manager[01;32mhungtran@hungtranpc[00m:[01;34m~/coding/golang/friend-manager[00m$ ^C
-]0;hungtran@hungtranpc: ~/coding/golang/friend-manager[01;32mhungtran@hungtranpc[00m:[01;34m~/coding/golang/friend-manager[00m$ ^C
-]0;hungtran@hungtranpc: ~/coding/golang/friend-manager[01;32mhungtran@hungtranpc[00m:[01;34m~/coding/golang/friend-manager[00m$ ^C
-]0;hungtran@hungtranpc: ~/coding/golang/friend-manager[01;32mhu
+INSERT INTO `users` VALUES
+   (1,'andy@example.com',NULL,NULL,NULL),
+   (2,'john@example.com',NULL,NULL,NULL),
+   (3,'hung.tran@example.com',NULL,NULL,NULL),
+   (4,'lisa@example.com',NULL,NULL,NULL),
+   (5,'common@example.com',NULL,NULL,NULL),
+   (6,'kate@example.com',NULL,NULL,NULL);
