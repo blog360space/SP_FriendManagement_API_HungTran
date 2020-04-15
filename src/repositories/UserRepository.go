@@ -10,16 +10,16 @@ import (
 )
 
 // UserCreateFriend Create Friend Relationship
-func UserCreateFriend(user1, user2 models.User) (models.Relationship, error) {
+func UserCreateFriend(requestor, target models.User) (models.Relationship, error) {
 	db := u.DbConn()
 
 	relationship := models.Relationship{}
 	// Check if email1 - email2 are friends ?
-	db.Where("user1_id = ? AND user2_id = ?", user1.ID, user2.ID).First(&relationship)
+	db.Where("requestor_id = ? AND target_id = ?", requestor.ID, target.ID).First(&relationship)
 
 	if relationship.ID > 0 {
 		if relationship.FriendStatus == configs.FRIEND_STATUS_BLOCK {
-			return relationship, fmt.Errorf("Target %s Blocked Requestor %s", user1.Email, user2.Email)
+			return relationship, fmt.Errorf("Target %s Blocked Requestor %s", requestor.Email, target.Email)
 		}
 
 		relationship.FriendStatus = configs.FRIEND_STATUS_YES
@@ -27,8 +27,8 @@ func UserCreateFriend(user1, user2 models.User) (models.Relationship, error) {
 		return relationship, nil
 	}
 
-	relationship.User1ID = user1.ID
-	relationship.User2ID = user2.ID
+	relationship.RequestorID = requestor.ID
+	relationship.TargetID = target.ID
 	relationship.FriendStatus = configs.FRIEND_STATUS_YES
 	relationship.Subscribe = configs.SUBSRIBE_YES
 	db.Create(&relationship)
@@ -84,33 +84,54 @@ func UserGetFriendsByEmail(email string) ([]models.User, error) {
 	sql := `SELECT *
 	FROM users
 	WHERE id IN (
-		SELECT r.user2_id
+		SELECT r.target_id
 		FROM relationships r
-		WHERE r.user1_id = ?
+		WHERE r.requestor_id = ?
+		AND r.friend_status = ?
+	)
+	UNION 
+	SELECT *
+	FROM users
+	WHERE id IN (
+		SELECT r.requestor_id
+		FROM relationships r
+		WHERE r.target_id = ?
+		AND r.friend_status = ?
 	)`
 
-	db.Raw(sql, user.ID).Scan(&users)
+	db.Raw(sql, user.ID, configs.FRIEND_STATUS_YES, user.ID, configs.FRIEND_STATUS_YES,).Scan(&users)
 
 	return users, nil
 }
 
 // UserGetFriendsCommon Get user friends common
-func UserGetFriendsCommon(user1, user2 models.User) ([]models.User, error) {
+func UserGetFriendsCommon(requestor, target models.User) ([]models.User, error) {
 	db := u.DbConn()
 	var users = []models.User{}
 
 	sql := `SELECT *
-	FROM users
+	FROM users u
 	WHERE id IN (
-		SELECT r.user1_id
+		SELECT r.requestor_id
 		FROM relationships r
-		WHERE r.user2_id IN (?, ?)
-	)`
-
-	db.Raw(sql, user1.ID, user2.ID).Scan(&users)
+		WHERE r.target_id IN (?, ?)
+        AND r.friend_status = ?
+	)
+	AND u.id NOT IN (?, ?)
+	UNION
+	SELECT *
+	FROM users u
+	WHERE id IN (
+		SELECT r.target_id
+		FROM relationships r
+		WHERE r.requestor_id IN (?, ?)
+		AND r.friend_status = ?
+	) AND u.id NOT IN (?, ?)`
+	db.Raw(sql, requestor.ID, target.ID, configs.FRIEND_STATUS_YES, requestor.ID, target.ID,
+		requestor.ID, target.ID, configs.FRIEND_STATUS_YES, requestor.ID, target.ID).Scan(&users)
 
 	if len(users) == 0 {
-		return users, fmt.Errorf("No common friend for %s and %s", user1.Email, user2.Email)
+		return users, fmt.Errorf("No common friend for %s and %s", requestor.Email, target.Email)
 	}
 
 	return users, nil
@@ -122,7 +143,7 @@ func UserSubscribe(requestor, target models.User) (models.Relationship, error) {
 
 	relationship := models.Relationship{}
 
-	db.Where("user1_id = ? AND user2_id = ?", requestor.ID, target.ID).First(&relationship)
+	db.Where("requestor_id = ? AND target_id = ?", requestor.ID, target.ID).First(&relationship)
 
 	if relationship.ID > 0 {
 		relationship.FriendStatus = configs.FRIEND_STATUS_YES
@@ -130,8 +151,8 @@ func UserSubscribe(requestor, target models.User) (models.Relationship, error) {
 		return relationship, nil
 	}
 
-	relationship.User1ID = requestor.ID
-	relationship.User2ID = target.ID
+	relationship.RequestorID = requestor.ID
+	relationship.TargetID = target.ID
 	relationship.FriendStatus = configs.FRIEND_STATUS_NO
 	relationship.Subscribe = configs.SUBSRIBE_YES
 	db.Create(&relationship)
@@ -145,7 +166,7 @@ func UserBlock(requestor, target models.User) (models.Relationship, error) {
 	db := u.DbConn()
 	relationship := models.Relationship{}
 
-	db.Where("user1_id = ? AND user2_id = ?", requestor.ID, target.ID).First(&relationship)
+	db.Where("requestor_id = ? AND target_id = ?", requestor.ID, target.ID).First(&relationship)
 
 	if relationship.ID > 0 {
 		relationship.FriendStatus = configs.FRIEND_STATUS_BLOCK
@@ -154,8 +175,8 @@ func UserBlock(requestor, target models.User) (models.Relationship, error) {
 		return relationship, nil
 	}
 
-	relationship.User1ID = requestor.ID
-	relationship.User2ID = target.ID
+	relationship.RequestorID = requestor.ID
+	relationship.TargetID = target.ID
 	relationship.FriendStatus = configs.FRIEND_STATUS_BLOCK
 	relationship.Subscribe = configs.SUBSRIBE_NO
 	db.Create(&relationship)
@@ -172,9 +193,9 @@ func UserGetSubscribeUsers(user models.User) ([]models.User, error) {
 	sql := `SELECT *
 	FROM users u
 	WHERE id IN (
-		SELECT r.user1_id
+		SELECT r.requestor_id
 		FROM relationships r
-		WHERE r.user2_id = ?
+		WHERE r.target_id = ?
 	)
 	ORDER BY u.id DESC`
 
