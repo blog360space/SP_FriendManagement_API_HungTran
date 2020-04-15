@@ -87,9 +87,19 @@ func UserGetFriendsByEmail(email string) ([]models.User, error) {
 		SELECT r.target_id
 		FROM relationships r
 		WHERE r.requestor_id = ?
+		AND r.friend_status = ?
+	)
+	UNION 
+	SELECT *
+	FROM users
+	WHERE id IN (
+		SELECT r.requestor_id
+		FROM relationships r
+		WHERE r.target_id = ?
+		AND r.friend_status = ?
 	)`
 
-	db.Raw(sql, user.ID).Scan(&users)
+	db.Raw(sql, user.ID, configs.FRIEND_STATUS_YES, user.ID, configs.FRIEND_STATUS_YES,).Scan(&users)
 
 	return users, nil
 }
@@ -100,14 +110,25 @@ func UserGetFriendsCommon(requestor, target models.User) ([]models.User, error) 
 	var users = []models.User{}
 
 	sql := `SELECT *
-	FROM users
+	FROM users u
 	WHERE id IN (
 		SELECT r.requestor_id
 		FROM relationships r
 		WHERE r.target_id IN (?, ?)
-	)`
-
-	db.Raw(sql, requestor.ID, target.ID).Scan(&users)
+        AND r.friend_status = ?
+	)
+	AND u.id NOT IN (?, ?)
+	UNION
+	SELECT *
+	FROM users u
+	WHERE id IN (
+		SELECT r.target_id
+		FROM relationships r
+		WHERE r.requestor_id IN (?, ?)
+		AND r.friend_status = ?
+	) AND u.id NOT IN (?, ?)`
+	db.Raw(sql, requestor.ID, target.ID, configs.FRIEND_STATUS_YES, requestor.ID, target.ID,
+		requestor.ID, target.ID, configs.FRIEND_STATUS_YES, requestor.ID, target.ID).Scan(&users)
 
 	if len(users) == 0 {
 		return users, fmt.Errorf("No common friend for %s and %s", requestor.Email, target.Email)

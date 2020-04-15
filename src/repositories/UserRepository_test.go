@@ -94,7 +94,7 @@ func TestUserGetFriendsByEmail(t *testing.T) {
 	u.DbTruncateTable("users")
 	u.DbTruncateTable("relationships")
 	var err error
-	var u1, u2, u3 models.User
+	var u1, u2, u3, ua, ub models.User
 
 	_, err1 := UserGetFriendsByEmail("hungtran@example.com")
 	expectedMsg := fmt.Sprintf("User %s not exits", "hungtran@example.com")
@@ -118,9 +118,28 @@ func TestUserGetFriendsByEmail(t *testing.T) {
 	if len(users) != 2 {
 		t.Errorf("len(user) = %d incorrect; want %d", len(users), 2)
 	}
+
+	ua , err = UserCreate("a@example.com")
+	ub , err = UserCreate("b@example.com")
+
+	UserCreateFriend(ua, ub)
+
+	users1, err := UserGetFriendsByEmail(ua.Email)
+	if len(users1) != 1 {
+		t.Errorf("len(user) = %d incorrect; want %d", len(users), 1)
+	}
+	if users1[0].Email != ub.Email {
+		t.Errorf("users1[0].Email = %s incorrect; want %s", users1[0].Email, ub.Email)
+	}
+
+	users2, err := UserGetFriendsByEmail(ub.Email)
+	if users2[0].Email != ua.Email {
+		t.Errorf("users1[0].Email = %s incorrect; want %s", users1[0].Email, ua.Email)
+	}
 }
 
 func TestUserGetFriendsCommon(t *testing.T) {
+	db := u.DbConn()
 	u.DbTruncateTable("users")
 	u.DbTruncateTable("relationships")
 	var err error
@@ -138,8 +157,10 @@ func TestUserGetFriendsCommon(t *testing.T) {
 		t.Errorf("error = %s; want '%s'", err.Error(), expectedMsg)
 	}
 
-	UserCreateFriend(u3, u1)
-	UserCreateFriend(u3, u1)
+	r1 := models.Relationship{RequestorID: u1.ID, TargetID: u3.ID, FriendStatus: configs.FRIEND_STATUS_YES}
+	db.Save(&r1);
+	r2 := models.Relationship{RequestorID: u2.ID, TargetID: u3.ID, FriendStatus: configs.FRIEND_STATUS_YES}
+	db.Save(&r2);
 
 	users, err = UserGetFriendsCommon(u1, u2)
 
@@ -151,6 +172,11 @@ func TestUserGetFriendsCommon(t *testing.T) {
 		t.Errorf("len(user) = %d incorrect; want %d", len(users), 1)
 	}
 
+	if users[0].Email != u3.Email {
+		t.Errorf("user.Email = %s incorrect; want %s", users[0].Email, u3.Email)
+	}
+
+	users, err = UserGetFriendsCommon(u2, u1)
 	if users[0].Email != u3.Email {
 		t.Errorf("user.Email = %s incorrect; want %s", users[0].Email, u3.Email)
 	}
